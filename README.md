@@ -32,6 +32,17 @@ var fn = $.ejs.compile(source, {
 <pre>
 &lt;&= set_link("rubylouvre","http://www.cnblogs.com/rubylouvre/") %&gt;
 </pre>
+<h3> "-"操作符的使用</h3>
+<p>见下面模板</p>
+<pre>
+&lt;%- for(var i=0, tl = @trs.length, tr; i &lt; tl; i++){ -%&gt;
+   &lt;- tr = @trs[i] -&gt;
+   &lt;tr&gt;
+     &lt;td&gt;&lt;%= tr.name %&gt;&lt;/td&gt;&lt;td&gt;&lt;%= tr.sex %&gt;&lt;/td&gt;&lt;td&gt;&lt;%= tr.date %&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+&lt;%- } -%&gt;
+</pre>
+<p>如果不使用-操作符,那么生成的HTML会在原<% %>之间的地方出现大块的空白,用了它就会削掉它们,保证HTML的干净,这是从rails的ERB模块引入的语法.</p>
 
 <h3>模板的编译函数的缓存</h3>
 <p>在前端我们可以通过选择器来缓存模板,比如</p>

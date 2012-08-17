@@ -10,13 +10,13 @@
             opts = opts || {}
             var doc = opts.doc || document;
             data = data || {};
-			if($.fn){
-			   el = $(id, doc)[0];
-			}else if(doc.querySelectorAll){
-			   el = doc.querySelectorAll(id)[0];
-			}else{
-			   el = doc.getElementById(id.slice(1));
-			}
+            if($.fn){
+                el = $(id, doc)[0];
+            }else if(doc.querySelectorAll){
+                el = doc.querySelectorAll(id)[0];
+            }else{
+                el = doc.getElementById(id.slice(1));
+            }
             if(! el )
                 throw "can not find the target element";
             source = el.innerHTML;
@@ -178,7 +178,7 @@
         }
     };
     return $.ejs;
-})(this.jQuery ||  this.window || this.exports  )
+})( this.jQuery ||  this.window || this.exports  )
 
 
 
