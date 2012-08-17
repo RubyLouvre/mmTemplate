@@ -10,7 +10,13 @@
             opts = opts || {}
             var doc = opts.doc || document;
             data = data || {};
-            el = $.query ? $(id, doc)[0] : doc.getElementById(id.slice(1));
+			if($.fn){
+			   el = $(id, doc)[0];
+			}else if(doc.querySelectorAll){
+			   el = doc.querySelectorAll(id)[0];
+			}else{
+			   el = doc.getElementById(id.slice(1));
+			}
             if(! el )
                 throw "can not find the target element";
             source = el.innerHTML;
@@ -30,9 +36,13 @@
             return fn( data )
         }
     }
-
+    //如果第二配置对象指定了tid，则使用它对应的编译模板
     $.ejs.compile = function( source, opts){
         opts = opts || {}
+        var tid = opts.tid
+        if(typeof tid === "string" && typeof $.ejs.cache[tid] == "function"){
+            return $.ejs.cache[tid];
+        }
         var open  = opts.open  || isNodejs ? "<%" : "<&";
         var close = opts.close || isNodejs ? "%>" : "&>";
         var helperNames = [], helpers = []
@@ -136,12 +146,16 @@
         var body = ["txt"+time,"js"+time, "filters"]
         var fn = Function.apply(Function, body.concat(helperNames,t) );
         var args = [codes, js, $.ejs.filters];
-        return fn.apply(this, args.concat(helpers));
+        var compiled = fn.apply(this, args.concat(helpers));
+        if(typeof tid === "string"){
+            return  $.ejs.cache[tid] = compiled
+        }
+        return compiled;
     }
     $.ejs.log = function(s){
-       if( typeof console == "object"){
-           console.log(s)
-       }
+        if( typeof console == "object"){
+            console.log(s)
+        }
     }
     $.ejs.cache = {};//用于保存编译好的模板函数
     $.ejs.filters = {//用于添加各种过滤器
