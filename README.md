@@ -11,7 +11,7 @@ ejs
 $.String.escapeHTML与$.String.unescapeHTML。更多过滤器自己可以到https://github.com/RubyLouvre/newland/blob/master/system/mass/lang.js
 中自由提取
 <pre>
-<&= "<aaaa>" | escape  &>
+&lt;&= "&lt;aaaa&gt;" | escape  &&gt;
 </pre>
 
 视图helper的使用，它相当于一种独立的函数，但它通常由框架提供的与action紧密相连的辅助方法。目的是将大量的业务代码移出模板，实现重用。它会在编译时一起写进模板中
@@ -19,7 +19,7 @@ $.String.escapeHTML与$.String.unescapeHTML。更多过滤器自己可以到http
 如
 <pre>
 var set_link = function(text, url){
-  return '<a href="'+url+'">'+text +'</a>'
+  return '&lt;a href="'+url+'"&gt;'+text +'&lt;/a&gt;';
 }
 
 var fn = $.ejs.compile(source, {
