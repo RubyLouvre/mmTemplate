@@ -1,5 +1,9 @@
-define( "ejs", ["$lang"], function( $ ){
-    $.log("已加载ejs模块!", 7)
+(function($){
+    if(!String.prototype.trim){
+        String.prototype.trim = function(){
+            return  this.replace(/^[\s\xA0]+/,"").replace(/[\s\xA0]+$/,'');
+        }
+    }
     $.ejs = function( id,data,opts){
         var el, source
         if( !$.ejs.cache[ id] ){
@@ -17,7 +21,7 @@ define( "ejs", ["$lang"], function( $ ){
                 throw "can not find the target element";
             source = el.innerHTML;
             if(!(/script|textarea/i.test(el.tagName))){
-                source = $.String.unescapeHTML( source );
+                source = $.ejs.filters.unescape( source );
             }
             var fn = $.ejs.compile( source, opts );
             $.ejs.cache[ id ] = fn;
@@ -26,11 +30,13 @@ define( "ejs", ["$lang"], function( $ ){
     }
     var isNodejs = typeof exports == "object";
     if(isNodejs){
+        //文本，数据，配置项，后项是默认使用<% %>
         $.ejs = function( source,data,opts){
             var fn = $.ejs.compile( source, opts );
             return fn( data )
         }
     }
+    //如果第二配置对象指定了tid，则使用它对应的编译模板
     $.ejs.compile = function( source, opts){
         opts = opts || {}
         var tid = opts.tid
@@ -42,17 +48,16 @@ define( "ejs", ["$lang"], function( $ ){
         var helperNames = [], helpers = []
         for(var name in opts){
             if(opts.hasOwnProperty(name) && typeof opts[name] == "function"){
-                helperNames.push(name);
-                helpers.push( opts[name] );//收集所有helper!
+                helperNames.push(name)
+                helpers.push( opts[name] )
             }
         }
-      //  helpers.push("__self__")
         var flag = true;//判定是否位于前定界符的左边
         var codes = []; //用于放置源码模板中普通文本片断
         var time = new Date * 1;// 时间截,用于构建codes数组的引用变量
         var prefix = " ;r += txt"+ time +"[" //渲染函数输出部分的前面
         var postfix = "];"//渲染函数输出部分的后面
-        var t = "return function (data){ try{var r = '',line"+time+" = 0;";//渲染函数的最开始部分
+        var t = "return function(data){ try{var r = '',line"+time+" = 0;";//渲染函数的最开始部分
         var rAt = /(^|[^\w\u00c0-\uFFFF_])(@)(?=\w)/g;
         var rstr = /(['"])(?:\\[\s\S]|[^\ \\r\n])*?\1/g // /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
         var rtrim = /(^-|-$)/g;
@@ -64,19 +69,14 @@ define( "ejs", ["$lang"], function( $ ){
             if( cur < pre){
                 if( flag ){//取得最末尾的HTML片断
                     t += prefix + codes.length + postfix
-                     if(cur == -1 && i == 0){
-                        code = source
-                    }else{
-                        code = source.slice( pre+ close.length );
-                    }
-                  //  code = source.slice( pre+ close.length );
+                    code = source.slice( pre+ close.length );
                     if(trim){
                         code = code.trim();
                         trim = false;
                     }
                     codes.push( code );
                 }else{
-                    $.error("发生错误了");
+                    $.ejs.log("发生错误了");
                 }
                 break;
             }
@@ -142,23 +142,43 @@ define( "ejs", ["$lang"], function( $ ){
             }
             flag = !flag;
         }
-        t += " return r; }catch(e){ $.log(e);\n$.log(js"+time+"[line"+time+"-1]) }}"
+        t += " return r; }catch(e){ $.ejs.log(e);\n$.ejs.log(js"+time+"[line"+time+"-1]) }}"
         var body = ["txt"+time,"js"+time, "filters"]
         var fn = Function.apply(Function, body.concat(helperNames,t) );
         var args = [codes, js, $.ejs.filters];
-        var compiled = fn.apply(this, args.concat(helpers) );
+        var compiled = fn.apply(this, args.concat(helpers));
         if(typeof tid === "string"){
             return  $.ejs.cache[tid] = compiled
         }
         return compiled;
     }
+    $.ejs.log = function(s){
+        if( typeof console == "object"){
+            console.log(s)
+        }
+    }
     $.ejs.cache = {};//用于保存编译好的模板函数
     $.ejs.filters = {//用于添加各种过滤器
-        contains: $.String.contains,
-        truncate: $.String.truncate,
-        camelize: $.String.camelize,
-        escape: $.String.escapeHTML,
-        unescape: $.String.unescapeHTML
+        escape:  function (target) {
+            return target.replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        },
+        //还原为可被文档解析的HTML标签
+        unescape: function (target) {
+            return  target.replace(/&quot;/g,'"')
+            .replace(/&lt;/g,'<')
+            .replace(/&gt;/g,'>')
+            .replace(/&amp;/g, "&"); //处理转义的中文和实体字符
+            return target.replace(/&#([\d]+);/g, function($0, $1){
+                return String.fromCharCode(parseInt($1, 10));
+            });
+        }
     };
-    return $;
-})
+    return $.ejs;
+})( this.jQuery ||  this.window || this.exports  )
+
+
+
