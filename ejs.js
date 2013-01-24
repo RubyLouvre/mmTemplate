@@ -2,20 +2,20 @@ define( "ejs", ["$lang"], function( $ ){
     $.log("已加载ejs模块!", 7)
     $.ejs = function( id,data,opts){
         var el, source
-        if( !$.ejs.cache[ id] ){
+        if( !$.ejs.cache[ id] ){//如果没有编译则先编译，以后就直接从缓存中取
             opts = opts || {}
             var doc = opts.doc || document;
             data = data || {};
-            if($.fn){
+            if($.fn){//如果引入jquery,mass
                 el = $(id, doc)[0];
-            }else if(doc.querySelectorAll){
+            }else if(doc.querySelectorAll){//如果是IE8+
                 el = doc.querySelectorAll(id)[0];
-            }else{
+            }else{//否则只能当成ID去查找
                 el = doc.getElementById(id.slice(1));
             }
             if(! el )
-                throw "can not find the target element";
-            source = el.innerHTML;
+                $.error( "找不到当作模板容器的元素");
+            source = el.innerHTML;//取得其内容
             if(!(/script|textarea/i.test(el.tagName))){
                 source = $.String.unescapeHTML( source );
             }
@@ -25,7 +25,7 @@ define( "ejs", ["$lang"], function( $ ){
         return $.ejs.cache[ id ]( data );
     }
     var isNodejs = typeof exports == "object";
-    if(isNodejs){
+    if(isNodejs){//如果是在node.js环境下
         $.ejs = function( source,data,opts){
             var fn = $.ejs.compile( source, opts );
             return fn( data )
@@ -46,7 +46,6 @@ define( "ejs", ["$lang"], function( $ ){
                 helpers.push( opts[name] );//收集所有helper!
             }
         }
-      //  helpers.push("__self__")
         var flag = true;//判定是否位于前定界符的左边
         var codes = []; //用于放置源码模板中普通文本片断
         var time = new Date * 1;// 时间截,用于构建codes数组的引用变量
@@ -65,11 +64,10 @@ define( "ejs", ["$lang"], function( $ ){
                 if( flag ){//取得最末尾的HTML片断
                     t += prefix + codes.length + postfix
                      if(cur == -1 && i == 0){
-                        code = source
+                        code = source;
                     }else{
                         code = source.slice( pre+ close.length );
                     }
-                  //  code = source.slice( pre+ close.length );
                     if(trim){
                         code = code.trim();
                         trim = false;
@@ -85,7 +83,7 @@ define( "ejs", ["$lang"], function( $ ){
             if( flag ){//取得HTML片断
                 t += prefix + codes.length + postfix;
                 if(trim){
-                    code = code.trim()
+                    code = code.trim();
                     trim = false;
                 }
                 codes.push( code );
@@ -133,22 +131,22 @@ define( "ejs", ["$lang"], function( $ ){
                     default://普通逻辑,不输出
                         code = code.replace(rtrim,function(){
                             trim = true;
-                            return ""
+                            return "";
                         });
-                        t += code.replace(rAt,"$1data.")
-                        break
+                        t += code.replace(rAt,"$1data.");
+                        break;
                 }
                 i = cur + close.length;
             }
             flag = !flag;
         }
         t += " return r; }catch(e){ $.log(e);\n$.log(js"+time+"[line"+time+"-1]) }}"
-        var body = ["txt"+time,"js"+time, "filters"]
+        var body = ["txt"+time,"js"+time, "filters"];
         var fn = Function.apply(Function, body.concat(helperNames,t) );
         var args = [codes, js, $.ejs.filters];
         var compiled = fn.apply(this, args.concat(helpers) );
         if(typeof tid === "string"){
-            return  $.ejs.cache[tid] = compiled
+            return  $.ejs.cache[tid] = compiled;
         }
         return compiled;
     }

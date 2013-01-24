@@ -5,14 +5,14 @@
         }
     }
     $.ejs = function( id,data,opts){
-        var el, source
+        var el, source;
         if( !$.ejs.cache[ id] ){
-            opts = opts || {}
+            opts = opts || {}；
             var doc = opts.doc || document;
             data = data || {};
-            if($.fn){
+            if($.fn){//如果引入jQuery, mass
                 el = $(id, doc)[0];
-            }else if(doc.querySelectorAll){
+            }else if(doc.querySelectorAll){//如果是IE8+与标准浏览器
                 el = doc.querySelectorAll(id)[0];
             }else{
                 el = doc.getElementById(id.slice(1));
@@ -76,7 +76,7 @@
                     }
                     codes.push( code );
                 }else{
-                    $.ejs.log("发生错误了");
+                    throw Error("发生错误了");
                 }
                 break;
             }
@@ -85,7 +85,7 @@
             if( flag ){//取得HTML片断
                 t += prefix + codes.length + postfix;
                 if(trim){
-                    code = code.trim()
+                    code = code.trim();
                     trim = false;
                 }
                 codes.push( code );
@@ -101,10 +101,10 @@
                         });
                         code = code.replace(rAt,"$1data.");
                         if( code.indexOf("|") > 1 ){//使用过滤器
-                            var arr = []
+                            var arr = [];
                             var str = code.replace(rstr, function(str){
                                 arr.push(str);//先收拾所有字符串字面量
-                                return 'mass'
+                                return 'mass';
                             }).replace(/\|\|/g,"@");//再收拾所有短路或
                             if(str.indexOf("|") > 1){
                                 var segments = str.split("|")
@@ -122,7 +122,7 @@
                                     }
                                     filtered = "$.ejs.filters."+ name +"(" +filtered + args+")"
                                 }
-                                code = "="+ filtered
+                                code = "="+ filtered;
                             }
                         }
                         t += " ;r +" +code +";"
@@ -133,10 +133,10 @@
                     default://普通逻辑,不输出
                         code = code.replace(rtrim,function(){
                             trim = true;
-                            return ""
+                            return "";
                         });
-                        t += code.replace(rAt,"$1data.")
-                        break
+                        t += code.replace(rAt,"$1data.");
+                        break;
                 }
                 i = cur + close.length;
             }
@@ -148,13 +148,13 @@
         var args = [codes, js, $.ejs.filters];
         var compiled = fn.apply(this, args.concat(helpers));
         if(typeof tid === "string"){
-            return  $.ejs.cache[tid] = compiled
+            return  $.ejs.cache[tid] = compiled;
         }
         return compiled;
     }
     $.ejs.log = function(s){
         if( typeof console == "object"){
-            console.log(s)
+            console.log(s);
         }
     }
     $.ejs.cache = {};//用于保存编译好的模板函数
