@@ -4,10 +4,10 @@
             return  this.replace(/^[\s\xA0]+/,"").replace(/[\s\xA0]+$/,'');
         }
     }
-    $.ejs = function( id,data,opts){
+     var EJS =  window.ejs = $.ejs = function( id,data,opts){
         var el, source;
-        if( !$.ejs.cache[ id] ){
-            opts = opts || {}；
+        if( !EJS.cache[ id] ){
+            opts = opts || {}; 
             var doc = opts.doc || document;
             data = data || {};
             if($.fn){//如果引入jQuery, mass
@@ -21,27 +21,27 @@
                 throw "can not find the target element";
             source = el.innerHTML;
             if(!(/script|textarea/i.test(el.tagName))){
-                source = $.ejs.filters.unescape( source );
+                source = EJS.filters.unescape( source );
             }
-            var fn = $.ejs.compile( source, opts );
-            $.ejs.cache[ id ] = fn;
+            var fn = EJS.compile( source, opts );
+            ejs.cache[ id ] = fn;
         }
-        return $.ejs.cache[ id ]( data );
+        return ejs.cache[ id ]( data );
     }
     var isNodejs = typeof exports == "object";
     if(isNodejs){
         //文本，数据，配置项，后项是默认使用<% %>
-        $.ejs = function( source,data,opts){
-            var fn = $.ejs.compile( source, opts );
+        EJS = function( source,data,opts){
+            var fn = EJS.compile( source, opts );
             return fn( data )
         }
     }
     //如果第二配置对象指定了tid，则使用它对应的编译模板
-    $.ejs.compile = function( source, opts){
+    EJS.compile = function( source, opts){
         opts = opts || {}
         var tid = opts.tid
-        if(typeof tid === "string" && typeof $.ejs.cache[tid] == "function"){
-            return $.ejs.cache[tid];
+        if(typeof tid === "string" && typeof EJS.cache[tid] == "function"){
+            return EJS.cache[tid];
         }
         var open  = opts.open  || isNodejs ? "<%" : "<&";
         var close = opts.close || isNodejs ? "%>" : "&>";
@@ -120,7 +120,7 @@
                                             return arr.shift();//还原
                                         })
                                     }
-                                    filtered = "$.ejs.filters."+ name +"(" +filtered + args+")"
+                                    filtered = "EJS.filters."+ name +"(" +filtered + args+")"
                                 }
                                 code = "="+ filtered;
                             }
@@ -142,23 +142,23 @@
             }
             flag = !flag;
         }
-        t += " return r; }catch(e){ $.ejs.log(e);\n$.ejs.log(js"+time+"[line"+time+"-1]) }}"
+        t += " return r; }catch(e){ EJS.log(e);\nEJS.log(js"+time+"[line"+time+"-1]) }}"
         var body = ["txt"+time,"js"+time, "filters"]
         var fn = Function.apply(Function, body.concat(helperNames,t) );
-        var args = [codes, js, $.ejs.filters];
+        var args = [codes, js, EJS.filters];
         var compiled = fn.apply(this, args.concat(helpers));
         if(typeof tid === "string"){
-            return  $.ejs.cache[tid] = compiled;
+            return  EJS.cache[tid] = compiled;
         }
         return compiled;
     }
-    $.ejs.log = function(s){
+    EJS.log = function(s){
         if( typeof console == "object"){
             console.log(s);
         }
     }
-    $.ejs.cache = {};//用于保存编译好的模板函数
-    $.ejs.filters = {//用于添加各种过滤器
+    EJS.cache = {};//用于保存编译好的模板函数
+    EJS.filters = {//用于添加各种过滤器
         escape:  function (target) {
             return target.replace(/&/g,'&amp;')
             .replace(/</g,'&lt;')
@@ -177,7 +177,7 @@
             });
         }
     };
-    return $.ejs;
+    return EJS;
 })( this.jQuery ||  this.window || this.exports  )
 
 

@@ -4,7 +4,7 @@
     <head>
         <title>ejs by 司徒正美</title>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <script src="mass_merge.js">  </script>
+        <script src="mmTemplate.js">  </script>
 
     </head>
     <body>
@@ -24,7 +24,7 @@
         <div id="ejsv10"></div>
         <script>
            
-           require("ejs,node,ready", function($){
+          window.onload = function(){
                 var trs = [
                     {name:"隐形杀手",age:29,sex:"男"},
                     {name:"索拉",age:22,sex:"男"},
@@ -34,7 +34,7 @@
                     {name:"你不懂的",age:30,sex:"女"}
                 ]
  
-                var html = $.ejs("#table_tmpl",{
+                var html = ejs("#table_tmpl",{
                     trs: trs,
                     href: "http://images.cnblogs.com/cnblogs_com/rubylouvre/202906/o_type4.jpg"
                 },{
@@ -43,9 +43,8 @@
                     }
                     
                 });
-                $("#ejsv10").html(html)
- 
-            })
+                document.getElementById("ejsv10").innerHTML = html;
+            }
         </script>
     </body>
 </html>
